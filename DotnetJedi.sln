@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11206.111 d18.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RotateImageTest", "RotateImageTest\RotateImageTest.csproj", "{1852EFBC-E0A8-296A-CBDF-E10E649A6913}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RotateImageUtils", "RotateImageUtils\RotateImageUtils.csproj", "{012807D2-D780-4DB1-BE72-AB122EEADE0B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RotationBenchmark", "RotationBenchmark\RotationBenchmark.csproj", "{3DD8684F-03EB-42CC-B025-15590C4E4808}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1852EFBC-E0A8-296A-CBDF-E10E649A6913}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1852EFBC-E0A8-296A-CBDF-E10E649A6913}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1852EFBC-E0A8-296A-CBDF-E10E649A6913}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1852EFBC-E0A8-296A-CBDF-E10E649A6913}.Release|Any CPU.Build.0 = Release|Any CPU
+		{012807D2-D780-4DB1-BE72-AB122EEADE0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{012807D2-D780-4DB1-BE72-AB122EEADE0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{012807D2-D780-4DB1-BE72-AB122EEADE0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{012807D2-D780-4DB1-BE72-AB122EEADE0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3DD8684F-03EB-42CC-B025-15590C4E4808}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DD8684F-03EB-42CC-B025-15590C4E4808}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DD8684F-03EB-42CC-B025-15590C4E4808}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DD8684F-03EB-42CC-B025-15590C4E4808}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FF300726-6592-4916-B1E3-7D055ADF2832}
+	EndGlobalSection
+EndGlobal

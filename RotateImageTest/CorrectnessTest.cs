@@ -38,12 +38,39 @@ namespace RotateImageTest
         ArraySegment<byte> InputSegment() => new(Input, 0, Input.Length);
 
         [Test]
-        public void Rotate90_Native_WorksCorrectly()
+        public void Rotate90_CopyBlock_WorksCorrectly()
         {
             var intput = InputSegment();
             var result = new byte[ExpectedRotated.Length];
-            RotationUtils.Rotate90ClockwiseRgb24_CopyBlock_MinTemps(intput, result, Width, Height);
-            Assert.That(intput, Is.EqualTo(ExpectedRotated));
+            RotationUtils.Rotate_3bpp_CopyBlock_MinTemps(intput, result, Width, Height);
+            Assert.That(result, Is.EqualTo(ExpectedRotated));
+        }
+
+        [Test]
+        public void Rotate90_RotateToBpp3_WorksCorrectly()
+        {
+            var intput = InputSegment();
+            var result = new byte[ExpectedRotated.Length];
+            RotationUtils.RotateToBpp3(intput, result, Width, Height);
+            Assert.That(result, Is.EqualTo(ExpectedRotated));
+        }
+
+        [Test]
+        public void Rotate90_TwoPass_WorksCorrectly()
+        {
+            var intput = InputSegment();
+            var result = new byte[ExpectedRotated.Length];
+            RotationUtils.Rotate90ClockwiseRgb24_TwoPassTransposeThenFlip(intput, result, Width, Height);
+            Assert.That(result, Is.EqualTo(ExpectedRotated));
+        }
+
+        [Test]
+        public void Rotate90_Tiled_WorksCorrectly()
+        {
+            var intput = InputSegment();
+            var result = new byte[ExpectedRotated.Length];
+            RotationUtils.Rotate90ClockwiseRgb24_Tiled(intput, result, Width, Height);
+            Assert.That(result, Is.EqualTo(ExpectedRotated));
         }
 
         [Test]
@@ -52,7 +79,7 @@ namespace RotateImageTest
             var intput = InputSegment();
             byte[] result = new byte[ExpectedRotated.Length];
             RotationUtils.RotateToBpp3_AsSpan(intput, result, Width, Height);
-            Assert.That(intput, Is.EqualTo(ExpectedRotated));
+            Assert.That(result, Is.EqualTo(ExpectedRotated));
         }
 
 

@@ -13,34 +13,36 @@ namespace RotateImageBenchmarks
     {
         public BenchmarkConfig()
         {
+            int iterationCount = 10;
+            int warmupCount = 3;
+
             AddJob(Job
                 .Default
                 .WithRuntime(CoreRuntime.Core10_0)
                 .WithId(".NET 10")
-                .WithWarmupCount(3)
-                .WithIterationCount(5)
+                .WithWarmupCount(warmupCount)
+                .WithIterationCount(iterationCount)
                 .WithLaunchCount(1));
 
             AddJob(Job
                 .Default
                 .WithRuntime(CoreRuntime.Core90)
                 .WithId(".NET 9")
-                .WithWarmupCount(3)
-                .WithIterationCount(5)
+                .WithWarmupCount(warmupCount)
+                .WithIterationCount(iterationCount)
                 .WithLaunchCount(1));
 
             AddJob(Job
                 .Default
                 .WithRuntime(CoreRuntime.Core80)
                 .WithId(".NET 8")
-                .WithWarmupCount(3)
-                .WithIterationCount(5)
+                .WithWarmupCount(warmupCount)
+                .WithIterationCount(iterationCount)
                 .WithLaunchCount(1));
 
             AddDiagnoser(MemoryDiagnoser.Default);
-            AddExporter(MarkdownExporter.Default, HtmlExporter.Default, CsvExporter.Default);
-            AddColumn(TargetMethodColumn.Method, StatisticColumn.Mean, StatisticColumn.Median,
-                      StatisticColumn.StdDev, StatisticColumn.P95, StatisticColumn.OperationsPerSecond);
+            AddExporter(MarkdownExporter.Default, HtmlExporter.Default);
+            AddColumn(TargetMethodColumn.Method, StatisticColumn.Mean);
         }
     }
 }

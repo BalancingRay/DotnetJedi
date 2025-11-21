@@ -10,10 +10,10 @@ namespace RotateImageBenchmarks
     public class RotateRgb24Benchmarks
     {
         // Dimensions to test (mirrors original test + can extend).
-        [Params(1024)]
+        [Params(10,1280)]
         public int Width { get; set; }
 
-        [Params(600, 1920)]
+        [Params(600, 2680)]
         public int Height { get; set; }
 
         private byte[] _input = default!;
@@ -32,7 +32,7 @@ namespace RotateImageBenchmarks
         {
             var input = _input;
             var output = _output;
-            RotationUtils.Rotate90ClockwiseRgb24_CopyBlock_MinTemps(input, output, Width, Height);
+            RotationUtils.Rotate_3bpp_CopyBlock_MinTemps(input, output, Width, Height);
 
         }
 
@@ -50,6 +50,22 @@ namespace RotateImageBenchmarks
             var input = _input;
             var output = _output;
             RotationUtils.RotateToBpp3_AsSpan(input, output, Width, Height);
+        }
+
+        [Benchmark]
+        public void Rotate_Generic_ToBpp3_Tiles()
+        {
+            var input = _input;
+            var output = _output;
+            RotationUtils.Rotate90ClockwiseRgb24_Tiled(input, output, Width, Height);
+        }
+
+        [Benchmark]
+        public void Rotate_Generic_ToBpp3_Tiled()
+        {
+            var input = _input;
+            var output = _output;
+            RotationUtils.Rotate90ClockwiseRgb24_Tiled(input, output, Width, Height);
         }
     }
 }

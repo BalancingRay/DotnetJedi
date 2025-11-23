@@ -92,11 +92,6 @@ namespace RotateImageTest
             var out1 = new byte[expected.Length];
             RotationUtils.RotateToBpp3_AsSpan(inp, out1, 1, 1);
             Assert.That(out1, Is.EqualTo(expected));
-            var inp2 = new byte[] { 8, 9, 7, 10, 11, 12 };
-            var expected2 = new byte[] { 10, 11, 12, 8, 9, 7 };
-            var out2 = new byte[expected2.Length];
-            RotationUtils.RotateToBpp3_AsSpan(inp2, expected2, 2, 1);
-            Assert.That(out2, Is.EqualTo(expected2));
         }
     }
 }

@@ -35,7 +35,7 @@ namespace RotateImageBenchmarks
                 .WithRuntime(CoreRuntime.Core80)
                 .WithWarmupCount(warmupCount)
                 .WithIterationCount(iterationCount)
-                .AsBaseline()
+                .AsBaseline() // set as baseline to compare results with different .net versions
                 .WithLaunchCount(1));
 
             AddJob(Job

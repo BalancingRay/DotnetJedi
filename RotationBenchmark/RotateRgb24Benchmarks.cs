@@ -53,7 +53,7 @@ namespace RotateImageBenchmarks
             Random.Shared.NextBytes(_input);
         }
 
-        [Benchmark(Baseline = true)]
+        [Benchmark(Baseline = true)] // Method used as baseline to compare with different implemenetaiton for each of iput paramters
         public void Rotate90_CopyBlock()
         {
             var input = _input;

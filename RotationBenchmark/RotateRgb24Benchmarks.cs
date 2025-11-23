@@ -9,12 +9,38 @@ namespace RotateImageBenchmarks
     [MemoryDiagnoser]
     public class RotateRgb24Benchmarks
     {
-        // Dimensions to test (mirrors original test + can extend).
-        [Params(10,1280)]
-        public int Width { get; set; }
 
-        [Params(600, 2680)]
-        public int Height { get; set; }
+        public enum ImageSize
+        {
+            ShortFrame_10_1024,
+            LargeFrame_100_1024,
+            FullHD_1920_1080,
+            FourK_3840_2160
+        }
+
+        [Params( ImageSize.ShortFrame_10_1024,
+                 ImageSize.LargeFrame_100_1024,
+                 ImageSize.FullHD_1920_1080,
+                 ImageSize.FourK_3840_2160)]
+        public ImageSize Size { get; set; }
+
+        public int Width => Size switch
+        {
+            ImageSize.ShortFrame_10_1024 => 1024,
+            ImageSize.LargeFrame_100_1024 => 1024,
+            ImageSize.FullHD_1920_1080 => 1920,
+            ImageSize.FourK_3840_2160 => 3840,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+        public int Height => Size switch
+        {
+            ImageSize.ShortFrame_10_1024 => 10,
+            ImageSize.LargeFrame_100_1024 => 100,
+            ImageSize.FullHD_1920_1080 => 1080,
+            ImageSize.FourK_3840_2160 => 2160,
+            _ => throw new ArgumentOutOfRangeException()
+        };
 
         private byte[] _input = default!;
         private byte[] _output = default!;
@@ -28,16 +54,15 @@ namespace RotateImageBenchmarks
         }
 
         [Benchmark(Baseline = true)]
-        public void Rotate90_CopyBlock_MinTemps()
+        public void Rotate90_CopyBlock()
         {
             var input = _input;
             var output = _output;
             RotationUtils.Rotate_3bpp_CopyBlock_MinTemps(input, output, Width, Height);
-
         }
 
         [Benchmark]
-        public void Rotate_Generic_ToBpp3()
+        public void Rotate_ToBpp3()
         {
             var input = _input;
             var output = _output;
@@ -45,7 +70,7 @@ namespace RotateImageBenchmarks
         }
 
         [Benchmark]
-        public void Rotate_Generic_ToBpp3_AsSpan()
+        public void Rotate_ToBpp3_AsSpan()
         {
             var input = _input;
             var output = _output;
@@ -53,15 +78,7 @@ namespace RotateImageBenchmarks
         }
 
         [Benchmark]
-        public void Rotate_Generic_ToBpp3_Tiles()
-        {
-            var input = _input;
-            var output = _output;
-            RotationUtils.Rotate90ClockwiseRgb24_Tiled(input, output, Width, Height);
-        }
-
-        [Benchmark]
-        public void Rotate_Generic_ToBpp3_Tiled()
+        public void Rotate_ToBpp3_Tiles()
         {
             var input = _input;
             var output = _output;

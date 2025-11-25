@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -276,6 +278,270 @@ ArraySegment<byte> data, byte[] destination, int width, int height)
                         }
                     }
                 }
+            }
+        }
+
+        [SkipLocalsInit]
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public static unsafe void RotateToBpp3_Unsafe_SSE41(
+            ReadOnlySpan<byte> src,
+            Span<byte> dst,
+            int width,
+            int height,
+            int maxThreads = 6)
+        {
+            if (!Avx2.IsSupported || !Ssse3.IsSupported || !Sse41.IsSupported)
+                throw new PlatformNotSupportedException("AVX2 + SSSE3 + SSE4.1 required");
+
+            int bytes = checked(width * height * 3);
+            if (src.Length < bytes || dst.Length < bytes)
+                throw new ArgumentException("Invalid buffer size");
+
+            int srcStride = width * 3;
+            int dstStride = height * 3;
+
+            fixed (byte* pSrcFixed = src)
+            fixed (byte* pDstFixed = dst)
+            {
+                byte* pSrc = pSrcFixed;
+                byte* pDst = pDstFixed;
+
+                Vector128<byte> reverseMask = Vector128.Create(
+                    (byte)15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
+                );
+
+                for (var x = 0; x < width; x++)
+                {
+                    byte* srcCol = pSrc + x * 3;
+                    byte* dstCol = pDst + x * dstStride + (height - 1) * 3;
+
+                    int y = 0;
+                    for (; y <= height - 4; y += 4)
+                    {
+                        byte* pSrc4 = srcCol + y * srcStride;
+                        byte* pDst4 = dstCol - y * 3;
+
+                        Vector128<byte> v = Sse2.LoadVector128(pSrc4);
+                        Vector128<byte> r = Ssse3.Shuffle(v, reverseMask);
+
+                        // r: нужные 12 байт находятся в элементах uint[1], uint[2], uint[3]
+                        Vector128<uint> r32 = r.AsUInt32();
+
+                        uint v1 = r32.GetElement(1);
+                        uint v2 = r32.GetElement(2);
+                        uint v3 = r32.GetElement(3);
+
+                        uint* d32 = (uint*)(pDst4 - 12);
+                        d32[0] = v1;
+                        d32[1] = v2;
+                        d32[2] = v3;
+                    }
+
+                    for (; y < height; y++)
+                    {
+                        byte* s = srcCol + y * srcStride;
+                        byte* d = dstCol - y * 3;
+
+                        d[0] = s[0];
+                        d[1] = s[1];
+                        d[2] = s[2];
+                    }
+                }
+            }
+        }
+
+        [SkipLocalsInit]
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public static unsafe void RotateToBpp3_Unsafe_Parallel(
+            ReadOnlySpan<byte> src,
+            Span<byte> dst,
+            int width,
+            int height,
+            int maxThreads = 6)
+        {
+            int bytes = checked(width * height * 3);
+            if (src.Length < bytes || dst.Length < bytes)
+                throw new ArgumentException("Invalid buffer size");
+
+            int srcStride = width * 3;
+            int dstStride = height * 3; // dstWidth = height
+
+            ParallelOptions po = new()
+            {
+                MaxDegreeOfParallelism = maxThreads
+            };
+
+            fixed (byte* pSrcFixed = src)
+            fixed (byte* pDstFixed = dst)
+            {
+                // создаём unmanaged указатели ВНЕ лямбды
+                byte* srcBase = pSrcFixed;
+                byte* dstBase = pDstFixed;
+
+                // теперь они НЕ являются captured variables → разрешено компилятором
+                Parallel.For(0, height, po, y =>
+                {
+                    byte* srcRow = srcBase + (nint)(y * srcStride);
+
+                    // dstX = height - 1 - y
+                    int dstX = height - 1 - y;
+                    byte* dstColBase = dstBase + (nint)(dstX * 3);
+
+                    for (int x = 0; x < width; x++)
+                    {
+                        byte* s = srcRow + (nint)(x * 3);
+                        byte* d = dstColBase + (nint)(x * dstStride);
+
+                        // copy 3 bytes
+                        d[0] = s[0];
+                        d[1] = s[1];
+                        d[2] = s[2];
+                    }
+                });
+            }
+        }    
+
+        [SkipLocalsInit]
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public static unsafe void RotateToBpp3_Unsafe_Parallel_SSSE3(
+            ReadOnlySpan<byte> src,
+            Span<byte> dst,
+            int width,
+            int height,
+            int maxThreads = 6)
+        {
+            if (!Sse2.IsSupported || !Ssse3.IsSupported)
+                throw new PlatformNotSupportedException("Sse2 + SSSE3 required");
+
+            int bytes = checked(width * height * 3);
+            if (src.Length < bytes || dst.Length < bytes)
+                throw new ArgumentException("Invalid buffer size");
+
+            int srcStride = width * 3;
+            int dstStride = height * 3;
+
+            var po = new ParallelOptions
+            {
+                MaxDegreeOfParallelism = maxThreads
+            };
+
+            fixed (byte* pSrcFixed = src)
+            fixed (byte* pDstFixed = dst)
+            {
+                byte* pSrc = pSrcFixed;
+                byte* pDst = pDstFixed;
+
+                Vector128<byte> reverseMask = Vector128.Create(
+                    (byte)15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
+                );
+
+                Parallel.For(0, width, po, x =>
+                {
+                    byte* srcCol = pSrc + x * 3;
+                    byte* dstCol = pDst + x * dstStride + (height - 1) * 3;
+
+                    byte* tmp = stackalloc byte[16];
+
+                    int y = 0;
+                    for (; y <= height - 4; y += 4)
+                    {
+                        byte* pSrc4 = srcCol + y * srcStride;
+                        byte* pDst4 = dstCol - y * 3;
+
+                        var v = Sse2.LoadVector128(pSrc4);
+                        var r = Ssse3.Shuffle(v, reverseMask);
+
+                        Sse2.Store(tmp, r);
+
+                        // копируем 12 байт: 8 + 4
+                        //*(ulong*)(pDst4 - 12) = *(ulong*)(tmp + 4);
+                        //*(int*)(pDst4 - 4) = *(int*)(tmp + 12);
+
+                        Unsafe.CopyBlockUnaligned(pDst4 - 12, tmp + 4, 12);
+                    }
+
+                    for (; y < height; y++)
+                    {
+                        byte* s = srcCol + y * srcStride;
+                        byte* d = dstCol - y * 3;
+
+                        Unsafe.CopyBlockUnaligned(d, s, 3);
+                    }
+                });
+            }
+        }
+
+        [SkipLocalsInit]
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public static unsafe void RotateToBpp3_Unsafe_Parallel_SSE41(
+            ReadOnlySpan<byte> src,
+            Span<byte> dst,
+            int width,
+            int height,
+            int maxThreads = 6)
+        {
+            if (!Avx2.IsSupported || !Ssse3.IsSupported || !Sse41.IsSupported)
+                throw new PlatformNotSupportedException("AVX2 + SSSE3 + SSE4.1 required");
+
+            int bytes = checked(width * height * 3);
+            if (src.Length < bytes || dst.Length < bytes)
+                throw new ArgumentException("Invalid buffer size");
+
+            int srcStride = width * 3;
+            int dstStride = height * 3;
+
+            ParallelOptions po = new()
+            {
+                MaxDegreeOfParallelism = maxThreads
+            };
+
+            fixed (byte* pSrcFixed = src)
+            fixed (byte* pDstFixed = dst)
+            {
+                byte* pSrc = pSrcFixed;
+                byte* pDst = pDstFixed;
+
+                Vector128<byte> reverseMask = Vector128.Create(
+                    (byte)15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
+                );
+
+                Parallel.For(0, width, po, x =>
+                {
+                    byte* srcCol = pSrc + x * 3;
+                    byte* dstCol = pDst + x * dstStride + (height - 1) * 3;
+
+                    int y = 0;
+                    for (; y <= height - 4; y += 4)
+                    {
+                        byte* pSrc4 = srcCol + y * srcStride;
+                        byte* pDst4 = dstCol - y * 3;
+
+                        Vector128<byte> v = Sse2.LoadVector128(pSrc4);
+                        Vector128<byte> r = Ssse3.Shuffle(v, reverseMask);
+
+                        // r: нужные 12 байт находятся в элементах uint[1], uint[2], uint[3]
+                        Vector128<uint> r32 = r.AsUInt32();
+
+                        uint v1 = r32.GetElement(1);
+                        uint v2 = r32.GetElement(2);
+                        uint v3 = r32.GetElement(3);
+
+                        uint* d32 = (uint*)(pDst4 - 12);
+                        d32[0] = v1;
+                        d32[1] = v2;
+                        d32[2] = v3;
+                    }
+
+                    for (; y < height; y++)
+                    {
+                        byte* s = srcCol + y * srcStride;
+                        byte* d = dstCol - y * 3;
+
+                        d[0] = s[0];
+                        d[1] = s[1];
+                        d[2] = s[2];
+                    }
+                });
             }
         }
     }

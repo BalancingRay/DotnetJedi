@@ -52,8 +52,8 @@ namespace RotateImageBenchmarks
             _output = new byte[_input.Length];
             Random.Shared.NextBytes(_input);
         }
-
-        [Benchmark(Baseline = true)] // Method used as baseline to compare with different implemenetaiton for each of iput paramters
+               
+        [Benchmark]
         public void Rotate90_CopyBlock()
         {
             var input = _input;
@@ -61,7 +61,7 @@ namespace RotateImageBenchmarks
             RotationUtils.Rotate_3bpp_CopyBlock_MinTemps(input, output, Width, Height);
         }
 
-        [Benchmark]
+        [Benchmark(Baseline = true)] // Method used as baseline to compare with different implemenetaiton for each of iput paramters
         public void Rotate_ToBpp3()
         {
             var input = _input;

@@ -281,6 +281,13 @@ ArraySegment<byte> data, byte[] destination, int width, int height)
             }
         }
 
+        /// <summary>
+        /// Rotates a 24-bit (3 BPP) image 90 degrees clockwise using SSE4.1 + SSSE3 + AVX2.
+        /// Optimized for minimal allocations and maximal throughput.  
+        /// Processes 4 pixels per iteration using 16-byte SIMD loads and byte-shuffle.
+        /// Scalar fallback handles remaining rows.  
+        /// Source and destination buffers must match width * height * 3.
+        /// </summary>
         [SkipLocalsInit]
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public static unsafe void RotateToBpp3_Unsafe_SSE41(
@@ -324,7 +331,7 @@ ArraySegment<byte> data, byte[] destination, int width, int height)
                         Vector128<byte> v = Sse2.LoadVector128(pSrc4);
                         Vector128<byte> r = Ssse3.Shuffle(v, reverseMask);
 
-                        // r: нужные 12 байт находятся в элементах uint[1], uint[2], uint[3]
+                        // r: the required 12 bytes are in the elements uint[1], uint[2], uint[3]
                         Vector128<uint> r32 = r.AsUInt32();
 
                         uint v1 = r32.GetElement(1);
@@ -350,6 +357,13 @@ ArraySegment<byte> data, byte[] destination, int width, int height)
             }
         }
 
+        /// <summary>
+        /// Rotates a 24-bit (3 BPP) image 90 degrees clockwise using unsafe pointers
+        /// combined with multi-threaded processing via Parallel.For.  
+        /// No SIMD is used; each thread processes a horizontal row independently.  
+        /// Suitable for CPUs without SSSE3/SSE4.1 support.  
+        /// Source and destination buffers must match width * height * 3.
+        /// </summary>
         [SkipLocalsInit]
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public static unsafe void RotateToBpp3_Unsafe_Parallel(
@@ -399,8 +413,16 @@ ArraySegment<byte> data, byte[] destination, int width, int height)
                     }
                 });
             }
-        }    
+        }
 
+        /// <summary>
+        /// Rotates a 24-bit (3 BPP) image 90 degrees clockwise using SSSE3 acceleration
+        /// inside a Parallel.For loop.  
+        /// Performs 16-byte SIMD loads and byte-reversal via SSSE3 shuffle mask,  
+        /// writing 12 output bytes per 4-pixel block.  
+        /// Uses stackalloc for temporary SIMD buffer to avoid heap allocations.
+        /// Source and destination buffers must match width * height * 3.
+        /// </summary>
         [SkipLocalsInit]
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public static unsafe void RotateToBpp3_Unsafe_Parallel_SSSE3(
@@ -471,6 +493,14 @@ ArraySegment<byte> data, byte[] destination, int width, int height)
             }
         }
 
+        /// <summary>
+        /// Rotates a 24-bit (3 BPP) image 90 degrees clockwise using SSE4.1 + SSSE3 + AVX2  
+        /// inside a multi-threaded Parallel.For loop.  
+        /// Loads 16 bytes, reverses with SSSE3 shuffle mask, then extracts three 32-bit
+        /// values containing the rotated 12-byte block.  
+        /// Provides maximum throughput on modern x64 CPUs with full SIMD support.
+        /// Source and destination buffers must match width * height * 3.
+        /// </summary>
         [SkipLocalsInit]
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public static unsafe void RotateToBpp3_Unsafe_Parallel_SSE41(
@@ -519,7 +549,7 @@ ArraySegment<byte> data, byte[] destination, int width, int height)
                         Vector128<byte> v = Sse2.LoadVector128(pSrc4);
                         Vector128<byte> r = Ssse3.Shuffle(v, reverseMask);
 
-                        // r: нужные 12 байт находятся в элементах uint[1], uint[2], uint[3]
+                        // r: the required 12 bytes are in the elements uint[1], uint[2], uint[3]
                         Vector128<uint> r32 = r.AsUInt32();
 
                         uint v1 = r32.GetElement(1);

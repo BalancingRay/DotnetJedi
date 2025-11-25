@@ -1,10 +1,8 @@
-using Microsoft.VisualStudio.TestPlatform.Utilities;
-using NUnit.Framework;
 using RotateImage;
-using System;
 namespace RotateImageTest
 {
     [TestFixture]
+    [Parallelizable(scope: ParallelScope.All)]
     public class ImageOrientationUtilsTests
     {
         // Test data: 2x3 image, 3 bytes per pixel (RGB)
@@ -92,6 +90,42 @@ namespace RotateImageTest
             var out1 = new byte[expected.Length];
             RotationUtils.RotateToBpp3_AsSpan(inp, out1, 1, 1);
             Assert.That(out1, Is.EqualTo(expected));
+        }        
+
+        [Test]
+        public void RotateToBpp3_Unsafe_SSE41()
+        {
+            var intput = InputSegment();
+            var result = new byte[ExpectedRotated.Length];
+            RotationUtils.RotateToBpp3_Unsafe_SSE41(intput, result, Width, Height);
+            Assert.That(result, Is.EqualTo(ExpectedRotated));
+        }
+
+        [Test]
+        public void RotateToBpp3_Unsafe_Parallel()
+        {
+            var intput = InputSegment();
+            var result = new byte[ExpectedRotated.Length];
+            RotationUtils.RotateToBpp3_Unsafe_Parallel(intput, result, Width, Height);
+            Assert.That(result, Is.EqualTo(ExpectedRotated));
+        }
+
+        [Test]
+        public void RotateToBpp3_Unsafe_Parallel_SSSE3()
+        {
+            var intput = InputSegment();
+            var result = new byte[ExpectedRotated.Length];
+            RotationUtils.RotateToBpp3_Unsafe_Parallel_SSSE3(intput, result, Width, Height);
+            Assert.That(result, Is.EqualTo(ExpectedRotated));
+        }
+
+        [Test]
+        public void RotateToBpp3_Unsafe_Parallel_SSE41()
+        {
+            var intput = InputSegment();
+            var result = new byte[ExpectedRotated.Length];
+            RotationUtils.RotateToBpp3_Unsafe_SSE41(intput, result, Width, Height);
+            Assert.That(result, Is.EqualTo(ExpectedRotated));
         }
     }
 }

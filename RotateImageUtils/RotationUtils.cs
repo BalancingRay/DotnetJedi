@@ -2,7 +2,6 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
-using System.Security.Cryptography;
 
 namespace RotateImage
 {
@@ -115,6 +114,63 @@ ArraySegment<byte> data, byte[] destination, int width, int height)
                 }
             }
             return destination;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public static unsafe void Rotate_3bpp_CopyBlock_Tiled(
+            ArraySegment<byte> data,
+            byte[] destination,
+            int width,
+            int height,
+            int tileSize = 64)
+        {
+            if (data.Array is null) throw new ArgumentNullException(nameof(data));
+            if (destination is null) throw new ArgumentNullException(nameof(destination));
+            const int Bpp = 3;
+            if (width < 0 || height < 0) throw new ArgumentOutOfRangeException();
+            int required = checked(width * height * Bpp);
+            if (data.Count < required) throw new ArgumentException("Source segment too small.", nameof(data));
+            if (destination.Length < required) throw new ArgumentException("Destination too small.", nameof(destination));
+            if (tileSize <= 0) tileSize = 64;
+
+            int srcStride = width * Bpp;
+            int dstRowBytes = height * Bpp;
+
+            fixed (byte* srcBase = &data.Array[data.Offset])
+            fixed (byte* dstBase = &destination[0])
+            {
+                for (int ty = 0; ty < height; ty += tileSize)
+                {
+                    int tileH = Math.Min(tileSize, height - ty);
+                    for (int tx = 0; tx < width; tx += tileSize)
+                    {
+                        int tileW = Math.Min(tileSize, width - tx);
+
+                        // Process a tile of size [tileH x tileW]
+                        for (int x = 0; x < tileW; x++)
+                        {
+                            int xGlobal = tx + x;
+
+                            // dst starting at row index (height - 1 - ty) for this tile, column xGlobal
+                            byte* dstPtr = dstBase + xGlobal * dstRowBytes + (height - 1 - ty) * Bpp;
+
+                            // src starting at (ty, xGlobal)
+                            byte* srcPtr = srcBase + ty * srcStride + xGlobal * Bpp;
+
+                            for (int y = 0; y < tileH; y++)
+                            {
+                                Unsafe.CopyBlockUnaligned(dstPtr, srcPtr, (uint)Bpp);
+
+                                // move down one row in source (same column)
+                                srcPtr += srcStride;
+
+                                // move left one pixel in destination row
+                                dstPtr -= Bpp;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         // Cache-friendly tiled 90° clockwise RGB24 rotation.

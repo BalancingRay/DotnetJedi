@@ -101,7 +101,7 @@ namespace RotateImageTest
         [TestCase(80, 60)]
         [TestCase(102, 555)]
         [TestCase(387, 276)]
-        public void Test_Rotate_3bpp_Rotate90ClockwiseRgb24_Tiled(int width, int height)
+        public void Test_Rotate_3bpp_Tiled(int width, int height)
         {
             var input = new byte[width * height * 3];
             Random.Shared.NextBytes(input);
@@ -116,6 +116,55 @@ namespace RotateImageTest
 
             RotationUtils.Rotate90ClockwiseRgb24_Tiled(t2, t1, width, height);
             RotationUtils.Rotate90ClockwiseRgb24_Tiled(t1, t2, height, width);
+
+            Assert.That(t2, Is.EqualTo(input));
+        }
+
+        
+
+        [TestCase(2, 3)]
+        [TestCase(80, 60)]
+        [TestCase(102, 555)]
+        [TestCase(387, 276)]
+        public void Test_Rotate_3bpp_CopyBlock_Tiled_64(int width, int height)
+        {
+            var input = new byte[width * height * 3];
+            Random.Shared.NextBytes(input);
+
+            var t1 = new byte[input.Length];
+            var t2 = new byte[input.Length];
+
+            RotationUtils.Rotate_3bpp_CopyBlock_Tiled(input, t1, width, height);
+            RotationUtils.Rotate_3bpp_CopyBlock_Tiled(t1, t2, height, width);
+
+            Assert.That(t2, Is.Not.EqualTo(input));
+
+            RotationUtils.Rotate_3bpp_CopyBlock_Tiled(t2, t1, width, height);
+            RotationUtils.Rotate_3bpp_CopyBlock_Tiled(t1, t2, height, width);
+
+            Assert.That(t2, Is.EqualTo(input));
+        }
+
+        [TestCase(2, 3)]
+        [TestCase(80, 60)]
+        [TestCase(102, 555)]
+        [TestCase(387, 276)]
+        public void Test_Rotate_3bpp_CopyBlock_Tiled_32(int width, int height)
+        {
+            int tileSize = 32;
+            var input = new byte[width * height * 3];
+            Random.Shared.NextBytes(input);
+
+            var t1 = new byte[input.Length];
+            var t2 = new byte[input.Length];
+
+            RotationUtils.Rotate_3bpp_CopyBlock_Tiled(input, t1, width, height, tileSize);
+            RotationUtils.Rotate_3bpp_CopyBlock_Tiled(t1, t2, height, width, tileSize);
+
+            Assert.That(t2, Is.Not.EqualTo(input));
+
+            RotationUtils.Rotate_3bpp_CopyBlock_Tiled(t2, t1, width, height, tileSize);
+            RotationUtils.Rotate_3bpp_CopyBlock_Tiled(t1, t2, height, width, tileSize);
 
             Assert.That(t2, Is.EqualTo(input));
         }

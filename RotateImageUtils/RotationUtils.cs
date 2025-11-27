@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using RotateImageUtils;
 using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RotateImage
 {
@@ -572,6 +568,45 @@ ArraySegment<byte> data, byte[] destination, int width, int height)
                         d[2] = s[2];
                     }
                 });
+            }
+        }
+
+        /// <summary>
+        /// Rotates a 24-bit (3 BPP) image 90 degrees clockwise using SSE4.1 + SSSE3 + AVX2  
+        /// inside a multi-threaded loop with minimal allocations  
+        /// Loads 16 bytes, reverses with SSSE3 shuffle mask, then extracts three 32-bit
+        /// values containing the rotated 12-byte block.  
+        /// Provides maximum throughput on modern x64 CPUs with full SIMD support.
+        /// Source and destination buffers must match width * height * 3.
+        /// Designed for high-throughput image pipelines (e.g., GigE Vision) with minimal allocations
+        /// and maximum performance. The method pins the source and destination buffers and performs a
+        /// single native call, where the actual rotation and parallelization are executed.
+        /// </summary>
+        [SkipLocalsInit]
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public static unsafe void RotateToBpp3_Unsafe_Parallel_SSE41_Native(
+           ReadOnlySpan<byte> src,
+           Span<byte> dst,
+           int width,
+           int height,
+           int maxThreads = 6)
+        {
+            if (!Avx2.IsSupported || !Ssse3.IsSupported || !Sse41.IsSupported)
+                throw new PlatformNotSupportedException("AVX2 + SSSE3 + SSE4.1 required");
+
+            int bytes = checked(width * height * 3);
+            if (src.Length < bytes || dst.Length < bytes)
+                throw new ArgumentException("Invalid buffer size (RGB24).");
+
+            fixed (byte* pSrc = src)
+            fixed (byte* pDst = dst)
+            {
+                NativeRotate.RotateRgb24_90cw_sse41(
+                    pSrc,
+                    pDst,
+                    width,
+                    height,
+                    maxThreads);
             }
         }
     }

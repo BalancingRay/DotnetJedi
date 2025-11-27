@@ -127,5 +127,14 @@ namespace RotateImageTest
             RotationUtils.RotateToBpp3_Unsafe_SSE41(intput, result, Width, Height);
             Assert.That(result, Is.EqualTo(ExpectedRotated));
         }
+
+        [Test]
+        public void RotateToBpp3_Unsafe_Parallel_SSE41_Native()
+        {
+            var intput = InputSegment();
+            var result = new byte[ExpectedRotated.Length];
+            RotationUtils.RotateToBpp3_Unsafe_Parallel_SSE41_Native(intput, result, Width, Height);
+            Assert.That(result, Is.EqualTo(ExpectedRotated));
+        }        
     }
 }

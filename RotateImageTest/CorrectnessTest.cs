@@ -36,6 +36,16 @@ namespace RotateImageTest
         ArraySegment<byte> InputSegment() => new(Input, 0, Input.Length);
 
         [Test]
+        public void Rotate90_CorrectnessOnEdgeShapes()
+        {
+            var inp = new byte[] { 42, 99, 100 };
+            var expected = new byte[] { 42, 99, 100 };
+            var out1 = new byte[expected.Length];
+            RotationUtils.RotateToBpp3_AsSpan(inp, out1, 1, 1);
+            Assert.That(out1, Is.EqualTo(expected));
+        }
+
+        [Test]
         public void Rotate90_CopyBlock_WorksCorrectly()
         {
             var intput = InputSegment();
@@ -72,25 +82,31 @@ namespace RotateImageTest
         }
 
         [Test]
+        public void Rotate90_Tiled32_WorksCorrectly()
+        {
+            var intput = InputSegment();
+            var result = new byte[ExpectedRotated.Length];
+            RotationUtils.Rotate90ClockwiseRgb24_Tiled(intput, result, Width, Height,32);
+            Assert.That(result, Is.EqualTo(ExpectedRotated));
+        }
+
+        [Test]
+        public void Rotate90_Tiled31_WorksCorrectly()
+        {
+            var intput = InputSegment();
+            var result = new byte[ExpectedRotated.Length];
+            RotationUtils.Rotate90ClockwiseRgb24_Tiled(intput, result, Width, Height,31);
+            Assert.That(result, Is.EqualTo(ExpectedRotated));
+        }
+
+        [Test]
         public void Rotate90_CopyToNew_WorksCorrectly()
         {
             var intput = InputSegment();
             byte[] result = new byte[ExpectedRotated.Length];
             RotationUtils.RotateToBpp3_AsSpan(intput, result, Width, Height);
             Assert.That(result, Is.EqualTo(ExpectedRotated));
-        }
-
-
-        // Bonus: test with a 1x1, 1x2 edge shape
-        [Test]
-        public void Rotate90_CorrectnessOnEdgeShapes()
-        {
-            var inp = new byte[] { 42, 99, 100 };
-            var expected = new byte[] { 42, 99, 100 };
-            var out1 = new byte[expected.Length];
-            RotationUtils.RotateToBpp3_AsSpan(inp, out1, 1, 1);
-            Assert.That(out1, Is.EqualTo(expected));
-        }        
+        }      
 
         [Test]
         public void RotateToBpp3_Unsafe_SSE41()

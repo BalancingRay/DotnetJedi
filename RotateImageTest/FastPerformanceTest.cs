@@ -4,7 +4,7 @@ namespace RotateImageTest
 {
     public class FastPerformanceTest
     {
-        const int repeatedCount = 50;
+        const int repeatedCount = 20;
 
         [TestCase(800,600, repeatedCount)]
         [TestCase(1024,1920, repeatedCount)]
@@ -50,14 +50,70 @@ namespace RotateImageTest
         [TestCase(800, 600, repeatedCount)]
         [TestCase(1024, 1920, repeatedCount)]
         [TestCase(2000, 4000, repeatedCount)]
-        public void Test_Rotate90_3bpp_Tiled(int width, int height, int repeatedCount)
+        public void Test_Rotate90_3bpp_Tiled128(int width, int height, int repeatedCount)
         {
             var input = new byte[width * height * 3];
             var output = new byte[input.Length];
             Random.Shared.NextBytes(input);
             for (int i = 0; i < repeatedCount; i++)
             {
-                RotationUtils.Rotate90ClockwiseRgb24_Tiled(input, output, width, height);
+                RotationUtils.Rotate90ClockwiseRgb24_Tiled(input, output, width, height, 128);
+            }
+        }
+
+        [TestCase(800, 600, repeatedCount)]
+        [TestCase(1024, 1920, repeatedCount)]
+        [TestCase(2000, 4000, repeatedCount)]
+        public void Test_Rotate90_3bpp_Tiled64(int width, int height, int repeatedCount)
+        {
+            var input = new byte[width * height * 3];
+            var output = new byte[input.Length];
+            Random.Shared.NextBytes(input);
+            for (int i = 0; i < repeatedCount; i++)
+            {
+                RotationUtils.Rotate90ClockwiseRgb24_Tiled(input, output, width, height,64);
+            }
+        }
+
+        [TestCase(800, 600, repeatedCount)]
+        [TestCase(1024, 1920, repeatedCount)]
+        [TestCase(2000, 4000, repeatedCount)]
+        public void Test_Rotate90_3bpp_Tiled32(int width, int height, int repeatedCount)
+        {
+            var input = new byte[width * height * 3];
+            var output = new byte[input.Length];
+            Random.Shared.NextBytes(input);
+            for (int i = 0; i < repeatedCount; i++)
+            {
+                RotationUtils.Rotate90ClockwiseRgb24_Tiled(input, output, width, height,32);
+            }
+        }
+
+        [TestCase(800, 600, repeatedCount)]
+        [TestCase(1024, 1920, repeatedCount)]
+        [TestCase(2000, 4000, repeatedCount)]
+        public void Test_Rotate90_3bpp_Tiled16(int width, int height, int repeatedCount)
+        {
+            var input = new byte[width * height * 3];
+            var output = new byte[input.Length];
+            Random.Shared.NextBytes(input);
+            for (int i = 0; i < repeatedCount; i++)
+            {
+                RotationUtils.Rotate90ClockwiseRgb24_Tiled(input, output, width, height, 16);
+            }
+        }
+
+        [TestCase(800, 600, repeatedCount)]
+        [TestCase(1024, 1920, repeatedCount)]
+        [TestCase(2000, 4000, repeatedCount)]
+        public void Test_Rotate90_3bpp_Tiled8(int width, int height, int repeatedCount)
+        {
+            var input = new byte[width * height * 3];
+            var output = new byte[input.Length];
+            Random.Shared.NextBytes(input);
+            for (int i = 0; i < repeatedCount; i++)
+            {
+                RotationUtils.Rotate90ClockwiseRgb24_Tiled(input, output, width, height, 8);
             }
         }
 

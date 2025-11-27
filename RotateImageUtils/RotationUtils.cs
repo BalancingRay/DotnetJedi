@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
+using System.Security.Cryptography;
 
 namespace RotateImage
 {
@@ -11,6 +12,11 @@ namespace RotateImage
         public static void RotateToBpp3_AsSpan(
     ArraySegment<byte> data, byte[] destination, int width, int height)
         {
+            if (data.Array == null)
+                throw new ArgumentException("Null input buffer");
+            int required = checked(width * height * 3);
+            if (data.Array.Length < required || destination.Length < required)
+                throw new ArgumentException("Invalid buffer size");
             ReadOnlySpan<byte> src = data.AsSpan();
             Span<byte> dst = destination;
 
@@ -243,6 +249,11 @@ ArraySegment<byte> data, byte[] destination, int width, int height)
             int tileSize)
         {
             const int Bpp = 3;
+            int bytes = checked(width * height * Bpp);
+            if(data.Array == null)
+                throw new ArgumentException("Null input buffer");
+            if (data.Array.Length < bytes || tmp.Length < bytes)
+                throw new ArgumentException("Invalid buffer size");
             var src = data.Array!;
             int srcOffset = data.Offset;
 

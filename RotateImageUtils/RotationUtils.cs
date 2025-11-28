@@ -269,8 +269,117 @@ ArraySegment<byte> data, byte[] destination, int width, int height)
             }
         }
 
+
+        [SkipLocalsInit]
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public static unsafe void Rotate_3bpp_CopyBlock_Tiled_V2(
+        public static unsafe void Rotate_3bpp_CopyBlock_Tiled_vector256(
+             ArraySegment<byte> data,
+             byte[] destination,
+             int width,
+             int height)
+        {
+            const int tileSize = 3;
+            if (data.Array is null) throw new ArgumentNullException(nameof(data));
+            if (destination is null) throw new ArgumentNullException(nameof(destination));
+            const int Bpp = 3;
+            if (width < 0 || height < 0) throw new ArgumentOutOfRangeException();
+            int required = checked(width * height * Bpp);
+            if (data.Count < required) throw new ArgumentException("Source segment too small.", nameof(data));
+            if (destination.Length < required) throw new ArgumentException("Destination too small.", nameof(destination));
+            if (!Sse2.IsSupported || !Ssse3.IsSupported)
+                throw new PlatformNotSupportedException("SSSE3 required for shuffle-based tile transform");
+
+            int srcStride = width * Bpp;
+            int dstRowBytes = height * Bpp;
+
+            ReadOnlySpan<byte> src = data;
+            Span<byte> dst = destination;
+
+            Vector256<byte> transform = Vector256.Create(
+                (byte)18, 19, 20, 9, 10, 11, 0, 1, 2,
+                      21, 22, 23, 12, 13, 14, 3, 4, 5,
+                      24, 25, 26, 15, 16, 17, 6, 7, 8,
+                      127, 127, 127, 127, 127);
+
+            fixed (byte* srcBase = &src[data.Offset])
+            fixed (byte* dstBase = &dst[0])
+            {
+                byte* tile = stackalloc byte[32];
+                for (int tileY = 0; tileY < height; tileY += tileSize)
+                {
+                    int tileH = Math.Min(tileSize, height - tileY);
+                    for (int tileX = 0; tileX < width; tileX += tileSize)
+                    {
+                        int tileW = Math.Min(tileSize, width - tileX);
+
+                        if (tileW == tileSize && tileH == tileSize)
+                        {
+                            // Stack buffer for 32 bytes tile payload (fits 27 bytes + pad)
+
+
+                            // 1) Copy selected tile data to the buffer as 3 operations by 3 bytes per pixel
+                            // Tile is laid out row-major: rows ty..ty+2, cols tx..tx+2
+                            byte* tPtr = tile;
+                            for (int i = 0; i < tileSize; i++)
+                            {
+                                int yGlobal = tileY + i;
+                                byte* srcRow = srcBase + yGlobal * srcStride + tileX * Bpp;
+                                // copy 3 pixels (9 bytes) of this row
+                                Unsafe.CopyBlockUnaligned(tPtr, srcRow, 9);
+                                tPtr += 9;
+                            }
+
+                            // 2) Use predefined transformation vector to rotate tile 90° CW
+                            Vector256<byte> tileVector = Avx.LoadDquVector256(tile);         // bytes 0..31
+                            Vector256<byte> rot = Vector256.Shuffle(tileVector, transform);
+
+
+                            // 4) Copy tile to destination as 3 operations by 3 bytes (per destination row)
+                            // Destination coordinates for 90° CW:
+                            // dst has dimensions [height x width]; a 3x3 source tile at (ty,tx) maps to:
+                            // columns xGlobal = tx..tx+2 become rows in dst; we write rows for x=tx..tx+2
+                            // For a column xGlobal, its destination row starts at:
+                            // dstRowStart = xGlobal * dstRowBytes, and within the row y maps to (height-1 - y)
+                            // Here, for each xGlobal in tx..tx+2, we copy a contiguous run of 3 pixels from rotated tile.
+                            // The rotated tile is in row-major order already.
+                            rot.Store(tile);
+                            byte* srcRotRow = tile;
+                            //byte* tilePtr = rot;
+                            for (int i = 0; i < tileSize; i++)
+                            {
+                                // destination row base for this column
+                                int destinationYshift = (tileX + i) * dstRowBytes;
+                                int destinationXshift = dstRowBytes - (tileY + tileSize) * Bpp;
+                                byte* d = dstBase + (destinationYshift + destinationXshift);
+                                // copy 3 pixels (9 bytes) from rotated tile row
+                                Unsafe.CopyBlockUnaligned(d, srcRotRow, 9);
+                                srcRotRow += 9;
+                            }
+                        }
+                        else
+                        {
+                            // Fallback for partial tiles at borders: use the existing pointer copy (correctness-first)
+                            for (int x = 0; x < tileW; x++)
+                            {
+                                int xGlobal = tileX + x;
+                                byte* dstPtr = dstBase + xGlobal * dstRowBytes + (height - 1 - tileY) * Bpp;
+                                byte* srcPtr = srcBase + tileY * srcStride + xGlobal * Bpp;
+
+                                for (int y = 0; y < tileH; y++)
+                                {
+                                    Unsafe.CopyBlockUnaligned(dstPtr, srcPtr, Bpp);
+                                    srcPtr += srcStride;
+                                    dstPtr -= Bpp;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public static unsafe void Rotate_3bpp_CopyBlock_Tiled_4copy(
             ArraySegment<byte> data,
             byte[] destination,
             int width,

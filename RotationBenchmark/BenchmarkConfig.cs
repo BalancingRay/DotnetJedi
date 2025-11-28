@@ -14,13 +14,14 @@ namespace RotateImageBenchmarks
         public BenchmarkConfig()
         {
             int iterationCount = 10;
-            int warmupCount = 2;
+            int warmupCount = 3;
 
             AddJob(Job
                 .Default
                 .WithRuntime(CoreRuntime.Core10_0)
                 .WithWarmupCount(warmupCount)
                 .WithIterationCount(iterationCount)
+                .AsBaseline() // set as baseline to compare results with different .net versions
                 .WithLaunchCount(1));
 
             AddJob(Job
@@ -33,14 +34,6 @@ namespace RotateImageBenchmarks
             AddJob(Job
                 .Default
                 .WithRuntime(CoreRuntime.Core80)
-                .WithWarmupCount(warmupCount)
-                .WithIterationCount(iterationCount)
-                .AsBaseline() // set as baseline to compare results with different .net versions
-                .WithLaunchCount(1));
-
-            AddJob(Job
-                .Default
-                .WithRuntime(CoreRuntime.Core60)
                 .WithWarmupCount(warmupCount)
                 .WithIterationCount(iterationCount)
                 .WithLaunchCount(1));

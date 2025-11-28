@@ -53,7 +53,7 @@ namespace RotateImageBenchmarks
             Random.Shared.NextBytes(_input);
         }
                
-        [Benchmark]
+        [Benchmark(Baseline = true)]
         public void Rotate90_CopyBlock()
         {
             var input = _input;
@@ -78,27 +78,27 @@ namespace RotateImageBenchmarks
         }
 
         [Benchmark]
+        public void Rotate_3bpp_CopyBlock_MinTemps_Stackalloc()
+        {
+            var input = _input;
+            var output = _output;
+            RotationUtils.Rotate_3bpp_CopyBlock_MinTemps_Stackalloc(input, output, Width, Height);
+        }
+
+        [Benchmark]
         public void Rotate_ToBpp3_Tiles()
         {
             var input = _input;
             var output = _output;
-            RotationUtils.Rotate90ClockwiseRgb24_Tiled(input, output, Width, Height);
+            RotationUtils.Rotate90ClockwiseRgb24_Tiled(input, output, Width, Height, 32);
         }
 
         [Benchmark]
-        public void RotateToBpp3_Unsafe_SSE41()
+        public void Rotate_ToBpp3_CopyBlock_Tiles_v2()
         {
             var input = _input;
             var output = _output;
-            RotationUtils.RotateToBpp3_Unsafe_SSE41(input, output, Width, Height);
-        }
-
-        [Benchmark]
-        public void RotateToBpp3_Unsafe_Parallel()
-        {
-            var input = _input;
-            var output = _output;
-            RotationUtils.RotateToBpp3_Unsafe_Parallel(input, output, Width, Height);
+            RotationUtils.Rotate_3bpp_CopyBlock_Tiled_V2(input, output, Width, Height,32);
         }
 
         [Benchmark]

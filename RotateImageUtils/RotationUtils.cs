@@ -117,6 +117,100 @@ ArraySegment<byte> data, byte[] destination, int width, int height)
         }
 
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public static unsafe byte[] Rotate_3bpp_Span_CopyBlock(
+            ArraySegment<byte> data,
+            byte[] destination,
+            int width,
+            int height)
+        {
+            if (data.Array is null) throw new ArgumentNullException(nameof(data));
+            if (destination is null) throw new ArgumentNullException(nameof(destination));
+            const int Bpp = 3;
+            if (width < 0 || height < 0) throw new ArgumentOutOfRangeException();
+            int required = checked(width * height * Bpp);
+            if (data.Count < required) throw new ArgumentException("Source segment too small.", nameof(data));
+            if (destination.Length < required) throw new ArgumentException("Destination too small.", nameof(destination));
+
+            int srcStride = width * Bpp;
+            int dstRowBytes = height * Bpp;
+            ReadOnlySpan<byte> src = data;
+            Span<byte> dst = destination;
+            fixed (byte* srcBase = &src[data.Offset])
+            fixed (byte* dstBase = &dst[0])
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    // Start pointers for this column/row transform.
+                    byte* srcPtr = srcBase + x * Bpp;                     // (0,x)
+                    byte* dstPtr = dstBase + x * dstRowBytes + (height - 1) * Bpp; // rightmost pixel of destination row
+
+                    for (int y = 0; y < height; y++)
+                    {
+                        Unsafe.CopyBlockUnaligned(dstPtr, srcPtr, (uint)Bpp);
+
+                        // Advance down one source row (same column)
+                        srcPtr += srcStride;
+
+                        // Move left one pixel in destination row
+                        dstPtr -= Bpp;
+                    }
+                }
+            }
+            return destination;
+        }
+
+        [SkipLocalsInit]
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public static unsafe void Rotate_3bpp_CopyBlock_MinTemps_Stackalloc(
+            ArraySegment<byte> data,
+            byte[] destination,
+            int width,
+            int height)
+        {
+            if (data.Array is null) throw new ArgumentNullException(nameof(data));
+            if (destination is null) throw new ArgumentNullException(nameof(destination));
+            const int Bpp = 3;
+            if (width < 0 || height < 0) throw new ArgumentOutOfRangeException();
+            int required = checked(width * height * Bpp);
+            if (data.Count < required) throw new ArgumentException("Source segment too small.", nameof(data));
+            if (destination.Length < required) throw new ArgumentException("Destination too small.", nameof(destination));
+            const int maxStackAlloc = 1024 * 32; // 32 KB max stackalloc size
+            int srcStride = width * Bpp;     // bytes per source row
+            int dstRowBytes = height * Bpp;  // bytes per destination row (new width = height)
+            if (dstRowBytes > maxStackAlloc)
+                throw new ArgumentException("heigth parameter is too large for this algorithm", nameof(data));
+            ReadOnlySpan<byte> src = data;
+            Span<byte> dst = destination;
+            fixed (byte* srcBase = &src[data.Offset])
+            fixed (byte* dstBase = &dst[0])
+            {
+                byte* basePtr = stackalloc byte[dstRowBytes];
+
+                for (int x = 0; x < width; x++)
+                {
+                    // Initialize temp buffer: fill destination row for column x
+                    // dst row address for this column = dstBase + x * dstRowBytes
+                    // mapping: dst[x, height - 1 - y] = src[y, x]
+                    // temp buffer holds the entire destination row for this x, written contiguously.
+                    byte* tempPtr = basePtr + (height - 1) * Bpp;
+                    byte* srcPtr = srcBase + x * Bpp;
+                    for (int y = 0; y < height; y++)
+                    {
+                        // copy 3-byte pixel into its reversed position in temp
+                        Unsafe.CopyBlockUnaligned(tempPtr, srcPtr, Bpp);
+                        srcPtr += srcStride;
+                        tempPtr -= Bpp;
+                    }
+
+                    // Bulk copy the prepared destination row
+                    byte* dstRowPtr = dstBase + x * dstRowBytes;
+                    Unsafe.CopyBlockUnaligned(dstRowPtr, basePtr, (uint)dstRowBytes);
+                }
+            }
+        }
+
+
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public static unsafe void Rotate_3bpp_CopyBlock_Tiled(
             ArraySegment<byte> data,
             byte[] destination,
@@ -136,8 +230,10 @@ ArraySegment<byte> data, byte[] destination, int width, int height)
             int srcStride = width * Bpp;
             int dstRowBytes = height * Bpp;
 
-            fixed (byte* srcBase = &data.Array[data.Offset])
-            fixed (byte* dstBase = &destination[0])
+            ReadOnlySpan<byte> src = data;
+            Span<byte> dst = destination;
+            fixed (byte* srcBase = &src[data.Offset])
+            fixed (byte* dstBase = &dst[0])
             {
                 for (int ty = 0; ty < height; ty += tileSize)
                 {
@@ -193,8 +289,10 @@ ArraySegment<byte> data, byte[] destination, int width, int height)
             int srcStride = width * Bpp;
             int dstRowBytes = height * Bpp;
 
-            fixed (byte* srcBase = &data.Array[data.Offset])
-            fixed (byte* dstBase = &destination[0])
+            ReadOnlySpan<byte> src = data;
+            Span<byte> dst = destination;
+            fixed (byte* srcBase = &src[data.Offset])
+            fixed (byte* dstBase = &dst[0])
             {
                 for (int ty = 0; ty < height; ty += tileSize)
                 {
@@ -387,7 +485,7 @@ ArraySegment<byte> data, byte[] destination, int width, int height)
         {
             const int Bpp = 3;
             int bytes = checked(width * height * Bpp);
-            if(data.Array == null)
+            if (data.Array == null)
                 throw new ArgumentException("Null input buffer");
             if (data.Array.Length < bytes || tmp.Length < bytes)
                 throw new ArgumentException("Invalid buffer size");

@@ -7,6 +7,10 @@ namespace RotateImageTest
     {
         #region Four times Rotation is Original
         [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 6)]
+        [TestCase(6, 3)]
+        [TestCase(9, 6)]
         [TestCase(80, 60)]
         [TestCase(102, 555)]
         [TestCase(387, 276)]
@@ -30,6 +34,10 @@ namespace RotateImageTest
         }
 
         [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 6)]
+        [TestCase(6, 3)]
+        [TestCase(9, 6)]
         [TestCase(80, 60)]
         [TestCase(102, 555)]
         [TestCase(387, 276)]
@@ -53,6 +61,10 @@ namespace RotateImageTest
         }
 
         [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 6)]
+        [TestCase(6, 3)]
+        [TestCase(9, 6)]
         [TestCase(80, 60)]
         [TestCase(102, 555)]
         [TestCase(387, 276)]
@@ -76,6 +88,10 @@ namespace RotateImageTest
         }
 
         [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 6)]
+        [TestCase(6, 3)]
+        [TestCase(9, 6)]
         [TestCase(80, 60)]
         [TestCase(102, 555)]
         [TestCase(387, 276)]
@@ -98,9 +114,11 @@ namespace RotateImageTest
             Assert.That(t2, Is.EqualTo(input));
         }
 
-
-
         [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 6)]
+        [TestCase(6, 3)]
+        [TestCase(9, 6)]
         [TestCase(80, 60)]
         [TestCase(102, 555)]
         [TestCase(387, 276)]
@@ -124,6 +142,10 @@ namespace RotateImageTest
         }
 
         [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 6)]
+        [TestCase(6, 3)]
+        [TestCase(9, 6)]
         [TestCase(80, 60)]
         [TestCase(102, 555)]
         [TestCase(387, 276)]
@@ -147,8 +169,12 @@ namespace RotateImageTest
             Assert.That(t2, Is.EqualTo(input));
         }
 
-        
+
         [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 6)]
+        [TestCase(6, 3)]
+        [TestCase(9, 6)]
         [TestCase(80, 60)]
         [TestCase(102, 555)]
         [TestCase(387, 276)]
@@ -172,6 +198,10 @@ namespace RotateImageTest
         }
 
         [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 6)]
+        [TestCase(6, 3)]
+        [TestCase(9, 6)]
         [TestCase(80, 60)]
         [TestCase(102, 555)]
         [TestCase(387, 276)]
@@ -199,6 +229,10 @@ namespace RotateImageTest
 
 
         [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 6)]
+        [TestCase(6, 3)]
+        [TestCase(9, 6)]
         [TestCase(80, 60)]
         [TestCase(102, 555)]
         [TestCase(387, 276)]
@@ -218,6 +252,10 @@ namespace RotateImageTest
         }
 
         [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 6)]
+        [TestCase(6, 3)]
+        [TestCase(9, 6)]
         [TestCase(80, 60)]
         [TestCase(102, 555)]
         [TestCase(387, 276)]
@@ -237,6 +275,10 @@ namespace RotateImageTest
         }
 
         [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 6)]
+        [TestCase(6, 3)]
+        [TestCase(9, 6)]
         [TestCase(80, 60)]
         [TestCase(102, 555)]
         [TestCase(387, 276)]
@@ -256,6 +298,10 @@ namespace RotateImageTest
         }
 
         [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 6)]
+        [TestCase(6, 3)]
+        [TestCase(9, 6)]
         [TestCase(80, 60)]
         [TestCase(102, 555)]
         [TestCase(387, 276)]
@@ -275,6 +321,10 @@ namespace RotateImageTest
         }
 
         [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 6)]
+        [TestCase(6, 3)]
+        [TestCase(9, 6)]
         [TestCase(80, 60)]
         [TestCase(102, 555)]
         [TestCase(387, 276)]
@@ -294,6 +344,10 @@ namespace RotateImageTest
         }
 
         [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 6)]
+        [TestCase(6, 3)]
+        [TestCase(9, 6)]
         [TestCase(80, 60)]
         [TestCase(102, 555)]
         [TestCase(387, 276)]
@@ -314,6 +368,10 @@ namespace RotateImageTest
         }
 
         [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 6)]
+        [TestCase(6, 3)]
+        [TestCase(9, 6)]
         [TestCase(80, 60)]
         [TestCase(102, 555)]
         [TestCase(387, 276)]
@@ -333,6 +391,10 @@ namespace RotateImageTest
         }
 
         [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 6)]
+        [TestCase(6, 3)]
+        [TestCase(9, 6)]
         [TestCase(80, 60)]
         [TestCase(102, 555)]
         [TestCase(387, 276)]
@@ -352,6 +414,10 @@ namespace RotateImageTest
         }
 
         [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 6)]
+        [TestCase(6, 3)]
+        [TestCase(9, 6)]
         [TestCase(80, 60)]
         [TestCase(102, 555)]
         [TestCase(387, 276)]
@@ -371,6 +437,10 @@ namespace RotateImageTest
         }
 
         [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 6)]
+        [TestCase(6, 3)]
+        [TestCase(9, 6)]
         [TestCase(80, 60)]
         [TestCase(102, 555)]
         [TestCase(387, 276)]
@@ -390,6 +460,10 @@ namespace RotateImageTest
         }
 
         [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 6)]
+        [TestCase(6, 3)]
+        [TestCase(9, 6)]
         [TestCase(80, 60)]
         [TestCase(102, 555)]
         [TestCase(387, 276)]
@@ -409,6 +483,10 @@ namespace RotateImageTest
         }
 
         [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 6)]
+        [TestCase(6, 3)]
+        [TestCase(9, 6)]
         [TestCase(80, 60)]
         [TestCase(102, 555)]
         [TestCase(387, 276)]
@@ -428,6 +506,10 @@ namespace RotateImageTest
         }
 
         [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 6)]
+        [TestCase(6, 3)]
+        [TestCase(9, 6)]
         [TestCase(80, 60)]
         [TestCase(102, 555)]
         [TestCase(387, 276)]
@@ -447,6 +529,10 @@ namespace RotateImageTest
         }
 
         [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 6)]
+        [TestCase(6, 3)]
+        [TestCase(9, 6)]
         [TestCase(80, 60)]
         [TestCase(102, 555)]
         [TestCase(387, 276)]
@@ -489,6 +575,10 @@ namespace RotateImageTest
         }
 
         [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 6)]
+        [TestCase(6, 3)]
+        [TestCase(9, 6)]
         [TestCase(80, 60)]
         [TestCase(102, 555)]
         [TestCase(387, 276)]

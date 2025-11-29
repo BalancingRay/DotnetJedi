@@ -32,7 +32,7 @@ void __stdcall RotateRgb24_90cw_sse41(
 
         int y = 0;
 
-        // основной SIMD-цикл: обрабатываем 4 пикселя по вертикали
+        // main SIMD loop: process 4 pixels vertically
         for (int y = 0; y <= height - 4; y += 4) {
             const std::uint8_t* p0 = srcCol + y * srcStride;
             const std::uint8_t* p1 = p0 + srcStride;
@@ -48,8 +48,8 @@ void __stdcall RotateRgb24_90cw_sse41(
             __m128i collapsed = _mm_shuffle_epi8(lanes, packMask);
 
             std::uint8_t* dstBlock = dstCol - (y + 3) * 3; // start at pixel y+3
-            *reinterpret_cast<std::uint64_t*>(dstBlock) = _mm_cvtsi128_si64(collapsed);          // 8 байт
-            *reinterpret_cast<std::uint32_t*>(dstBlock + 8) = _mm_extract_epi32(collapsed, 2);       // ещё 4 байта
+            *reinterpret_cast<std::uint64_t*>(dstBlock) = _mm_cvtsi128_si64(collapsed); // 8 byte
+            *reinterpret_cast<std::uint32_t*>(dstBlock + 8) = _mm_extract_epi32(collapsed, 2); // 4 more bytes
         }
 
         for (; y < height; ++y)

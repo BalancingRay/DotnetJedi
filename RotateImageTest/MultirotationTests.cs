@@ -509,6 +509,10 @@ namespace RotateImageTest
         }
 
         [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 6)]
+        [TestCase(6, 3)]
+        [TestCase(9, 6)]
         [TestCase(80, 60)]
         [TestCase(102, 555)]
         [TestCase(387, 276)]
@@ -523,6 +527,29 @@ namespace RotateImageTest
 
             RotationUtils.RotateToBpp3_Unsafe_SSE41(input, t1, width, height);
             RotationUtils.RotateToBpp3_Unsafe_SSE41(t1, t2, height, width);
+
+            Assert.That(t2, Is.EqualTo(output));
+        }
+
+        [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 6)]
+        [TestCase(6, 3)]
+        [TestCase(9, 6)]
+        [TestCase(80, 60)]
+        [TestCase(102, 555)]
+        [TestCase(387, 276)]
+        public void Test_2Rotate_3bpp_Unsafe_Parallel_SSE41_Native(int width, int height)
+        {
+            var input = new byte[width * height * 3];
+            Random.Shared.NextBytes(input);
+            var output = GetRotate180rgb(input);
+
+            var t1 = new byte[input.Length];
+            var t2 = new byte[input.Length];
+
+            RotationUtils.RotateToBpp3_Unsafe_Parallel_SSE41_Native(input, t1, width, height);
+            RotationUtils.RotateToBpp3_Unsafe_Parallel_SSE41_Native(t1, t2, height, width);
 
             Assert.That(t2, Is.EqualTo(output));
         }

@@ -23,8 +23,8 @@ namespace RotateImageTest
         // [ R5 G5 B5 | R3 G3 B3 | R1 G1 B1 ]   // y=1 (row 1)
         static readonly byte[] ExpectedRotated =
         {
-              18, 19, 20,   12, 13, 14,   6, 7, 8,    0, 1, 2,
-              21, 22, 23,   15, 16, 17,   9, 10, 11,  3, 4, 5,
+            18, 19, 20,   12, 13, 14,   6, 7, 8,    0, 1, 2,
+            21, 22, 23,   15, 16, 17,   9, 10, 11,  3, 4, 5,
         };
 
         static readonly int Width = 2;
@@ -84,7 +84,7 @@ namespace RotateImageTest
         {
             var intput = InputSegment();
             var result = new byte[ExpectedRotated.Length];
-            RotationUtils.Rotate90ClockwiseRgb24_Tiled(intput, result, Width, Height,32);
+            RotationUtils.Rotate90ClockwiseRgb24_Tiled(intput, result, Width, Height, 32);
             Assert.That(result, Is.EqualTo(ExpectedRotated));
         }
 
@@ -93,7 +93,7 @@ namespace RotateImageTest
         {
             var intput = InputSegment();
             var result = new byte[ExpectedRotated.Length];
-            RotationUtils.Rotate90ClockwiseRgb24_Tiled(intput, result, Width, Height,31);
+            RotationUtils.Rotate90ClockwiseRgb24_Tiled(intput, result, Width, Height, 31);
             Assert.That(result, Is.EqualTo(ExpectedRotated));
         }
 

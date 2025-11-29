@@ -670,7 +670,7 @@ ArraySegment<byte> data, byte[] destination, int width, int height)
             int srcStride = width * 3;
             int dstStride = height * 3;
 
-            // SSSE3 mask: p3 | p2 | p1 | p0 (по 3 байта из каждого 32-битного лейна)
+            // SSSE3 mask: p3 | p2 | p1 | p0 (3 bytes from each 32-bit lane)
             Vector128<byte> packMask = Vector128.Create(
                 (byte)12, 13, 14,
                 8, 9, 10,
@@ -692,7 +692,7 @@ ArraySegment<byte> data, byte[] destination, int width, int height)
 
                     int y = 0;
                     byte* srcPtr = srcCol;
-                    byte* dstBlock = dstCol - 9; // позиция для пикселя (y+3)
+                    byte* dstBlock = dstCol - 9; // position for pixel (y+3)
 
                     for (; y <= height - 4; y += 4, srcPtr += srcStride * 4, dstBlock -= 12)
                     {
@@ -754,11 +754,10 @@ ArraySegment<byte> data, byte[] destination, int width, int height)
             fixed (byte* pSrcFixed = src)
             fixed (byte* pDstFixed = dst)
             {
-                // создаём unmanaged указатели ВНЕ лямбды
                 byte* srcBase = pSrcFixed;
                 byte* dstBase = pDstFixed;
 
-                // теперь они НЕ являются captured variables → разрешено компилятором
+                // now they are NOT captured variables → allowed by the compiler
                 Parallel.For(0, height, po, y =>
                 {
                     byte* srcRow = srcBase + (nint)(y * srcStride);

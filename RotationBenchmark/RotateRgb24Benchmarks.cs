@@ -130,15 +130,8 @@ namespace RotateImageBenchmarks
         {
             var input = _input;
             var output = _output;
-            RotationUtils.RotateToBpp3_Unsafe_Parallel(input, output, Width, Height);
-        }
-
-        [Benchmark]
-        public void RotateToBpp3_Unsafe_Parallel_SSSE3()
-        {
-            var input = _input;
-            var output = _output;
-            RotationUtils.RotateToBpp3_Unsafe_Parallel_SSSE3(input, output, Width, Height);
+            var maxThreads = Environment.ProcessorCount / 2;
+            RotationUtils.RotateToBpp3_Unsafe_Parallel(input, output, Width, Height, maxThreads);
         }
 
         [Benchmark]
@@ -146,7 +139,8 @@ namespace RotateImageBenchmarks
         {
             var input = _input;
             var output = _output;
-            RotationUtils.RotateToBpp3_Unsafe_Parallel_SSE41(input, output, Width, Height);
+            var maxThreads = Environment.ProcessorCount / 2;
+            RotationUtils.RotateToBpp3_Unsafe_Parallel_SSE41(input, output, Width, Height, maxThreads);
         }
 
         [Benchmark]
@@ -154,7 +148,8 @@ namespace RotateImageBenchmarks
         {
             var input = _input;
             var output = _output;
-            RotationUtils.RotateToBpp3_Unsafe_Parallel_SSE41_Native(input, output, Width, Height);
+            var maxThreads = Environment.ProcessorCount / 2;
+            RotationUtils.RotateToBpp3_Unsafe_Parallel_SSE41_Native(input, output, Width, Height, maxThreads);
         }
     }
 }

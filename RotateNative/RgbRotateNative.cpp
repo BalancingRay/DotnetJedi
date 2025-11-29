@@ -16,8 +16,12 @@ void __stdcall RotateRgb24_90cw_sse41(
     const int srcStride = width * 3;
     const int dstStride = height * 3;
 
-    const __m128i reverseMask = _mm_setr_epi8(
-        15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
+    const __m128i packMask = _mm_setr_epi8(
+        12, 13, 14,  // p3
+        8, 9, 10,  // p2
+        4, 5, 6,  // p1
+        0, 1, 2,  // p0
+        -1, -1, -1, -1 // ignore high bytes
     );
 
 #pragma omp parallel for num_threads(maxThreads)
@@ -29,24 +33,23 @@ void __stdcall RotateRgb24_90cw_sse41(
         int y = 0;
 
         // основной SIMD-цикл: обрабатываем 4 пикселя по вертикали
-        for (; y <= height - 4; y += 4)
-        {
-            const std::uint8_t* pSrc4 = srcCol + y * srcStride;
-            std::uint8_t* pDst4 = dstCol - y * 3;
+        for (int y = 0; y <= height - 4; y += 4) {
+            const std::uint8_t* p0 = srcCol + y * srcStride;
+            const std::uint8_t* p1 = p0 + srcStride;
+            const std::uint8_t* p2 = p1 + srcStride;
+            const std::uint8_t* p3 = p2 + srcStride;
 
-            // load 16 bytes (5 pixels of 3 bytes + tail → we need the first 12 bytes after shuffle)
-            __m128i v = _mm_loadu_si128(reinterpret_cast<const __m128i*>(pSrc4));
-            __m128i r = _mm_shuffle_epi8(v, reverseMask);
+            std::uint32_t v0 = p0[0] | (p0[1] << 8) | (p0[2] << 16);
+            std::uint32_t v1 = p1[0] | (p1[1] << 8) | (p1[2] << 16);
+            std::uint32_t v2 = p2[0] | (p2[1] << 8) | (p2[2] << 16);
+            std::uint32_t v3 = p3[0] | (p3[1] << 8) | (p3[2] << 16);
 
-            // r contains the data we need in uint[1], uint[2], uint[3]
-            std::uint32_t v1 = static_cast<std::uint32_t>(_mm_extract_epi32(r, 1));
-            std::uint32_t v2 = static_cast<std::uint32_t>(_mm_extract_epi32(r, 2));
-            std::uint32_t v3 = static_cast<std::uint32_t>(_mm_extract_epi32(r, 3));
+            __m128i lanes = _mm_setr_epi32(v0, v1, v2, v3);
+            __m128i collapsed = _mm_shuffle_epi8(lanes, packMask);
 
-            std::uint32_t* d32 = reinterpret_cast<std::uint32_t*>(pDst4 - 12);
-            d32[0] = v1;
-            d32[1] = v2;
-            d32[2] = v3;
+            std::uint8_t* dstBlock = dstCol - (y + 3) * 3; // start at pixel y+3
+            *reinterpret_cast<std::uint64_t*>(dstBlock) = _mm_cvtsi128_si64(collapsed);          // 8 байт
+            *reinterpret_cast<std::uint32_t*>(dstBlock + 8) = _mm_extract_epi32(collapsed, 2);       // ещё 4 байта
         }
 
         for (; y < height; ++y)

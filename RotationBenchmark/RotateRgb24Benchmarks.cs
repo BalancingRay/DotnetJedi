@@ -134,14 +134,6 @@ namespace RotateImageBenchmarks
         }
 
         [Benchmark]
-        public void RotateToBpp3_Unsafe_Parallel_SSSE3()
-        {
-            var input = _input;
-            var output = _output;
-            RotationUtils.RotateToBpp3_Unsafe_Parallel_SSSE3(input, output, Width, Height);
-        }
-
-        [Benchmark]
         public void RotateToBpp3_Unsafe_Parallel_SSE41()
         {
             var input = _input;
